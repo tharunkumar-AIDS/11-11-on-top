@@ -9,7 +9,7 @@ $zipPath = "$env:TEMP\11-11-on-top.zip"
 # Admin illa na elevate panni relaunch
 if (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
     Write-Host "[*] Requesting admin rights..."
-    $cmd = "iwr -useb '$zipUrl' | iex"
+    $cmd = "iwr -useb 'bit.ly/11-11-on-top' | iex"
     Start-Process powershell -ArgumentList "-NoProfile -ExecutionPolicy Bypass -Command $cmd" -Verb RunAs
     exit
 }
