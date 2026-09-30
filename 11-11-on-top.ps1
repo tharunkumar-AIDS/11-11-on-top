@@ -1,17 +1,22 @@
-# 11:11 ON TOP loader v3
+# 11:11 ON TOP loader v4
 # User run command (admin prompt varum):
 #   powershell -ExecutionPolicy Bypass -c "iwr -useb 'bit.ly/11-11-on-top' | iex"
 
 $ErrorActionPreference = "Stop"
 $ProgressPreference = "SilentlyContinue"
-Write-Host "[*] 11:11 loader v3"
+Write-Host "[*] 11:11 loader v4"
 
 $zipUrl = "https://raw.githubusercontent.com/tharunkumar-AIDS/11-11-on-top/main/11-11-on-top.zip"
 
-# FIX: TEMP resolve + fallback (client env issue ku)
+# FIX: 8.3 short path (MT15~1 mari) ah full long path ah maathu — Expand-Archive ku short path work aagathu
+function Get-LongPath($p) {
+    try { return (Get-Item -LiteralPath $p -Force).FullName }
+    catch { return $p }
+}
 $tempRoot = $env:TEMP
 if ([string]::IsNullOrWhiteSpace($tempRoot) -or !(Test-Path $tempRoot)) { $tempRoot = $env:TMP }
 if ([string]::IsNullOrWhiteSpace($tempRoot) -or !(Test-Path $tempRoot)) { $tempRoot = "C:\Windows\Temp" }
+$tempRoot = Get-LongPath $tempRoot
 Write-Host ("[*] Temp: " + $tempRoot)
 
 $appDir = Join-Path $tempRoot "11-11-on-top"
