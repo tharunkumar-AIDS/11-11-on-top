@@ -1,11 +1,22 @@
-# 11:11 ON TOP loader
+# 11:11 ON TOP loader v3
 # User run command (admin prompt varum):
 #   powershell -ExecutionPolicy Bypass -c "iwr -useb 'bit.ly/11-11-on-top' | iex"
 
 $ErrorActionPreference = "Stop"
+$ProgressPreference = "SilentlyContinue"
+Write-Host "[*] 11:11 loader v3"
+
 $zipUrl = "https://raw.githubusercontent.com/tharunkumar-AIDS/11-11-on-top/main/11-11-on-top.zip"
-$appDir = "$env:TEMP\11-11-on-top"
-$zipPath = "$env:TEMP\11-11-on-top.zip"
+
+# FIX: TEMP resolve + fallback (client env issue ku)
+$tempRoot = $env:TEMP
+if ([string]::IsNullOrWhiteSpace($tempRoot) -or !(Test-Path $tempRoot)) { $tempRoot = $env:TMP }
+if ([string]::IsNullOrWhiteSpace($tempRoot) -or !(Test-Path $tempRoot)) { $tempRoot = "C:\Windows\Temp" }
+Write-Host ("[*] Temp: " + $tempRoot)
+
+$appDir = Join-Path $tempRoot "11-11-on-top"
+$zipPath = Join-Path $tempRoot "11-11-on-top.zip"
+Write-Host ("[*] Target: " + $appDir)
 
 # Admin illa na elevate panni relaunch
 if (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
@@ -20,11 +31,13 @@ try {
     Write-Host "[*] Downloading panel..."
     if (Test-Path $appDir) { Remove-Item $appDir -Recurse -Force }
     if (Test-Path $zipPath) { Remove-Item $zipPath -Force }
+    New-Item $appDir -ItemType Directory -Force | Out-Null
     Invoke-WebRequest -Uri $zipUrl -OutFile $zipPath -UseBasicParsing
 
-    # FIX: download verify — AV delete panna/0-byte na clear error
     if (!(Test-Path $zipPath)) { throw "Download file not found! Antivirus blocked? TEMP folder ah exclusion la podu." }
-    if ((Get-Item $zipPath).Length -lt 500KB) { throw "Download incomplete (small file)! Net check pannu." }
+    $size = (Get-Item $zipPath).Length
+    Write-Host ("[*] Downloaded: " + $size + " bytes")
+    if ($size -lt 500KB) { throw "Download incomplete (small file)! Net check pannu." }
 
     Write-Host "[*] Extracting..."
     Expand-Archive -Path $zipPath -DestinationPath $appDir -Force
@@ -38,6 +51,7 @@ try {
 }
 catch {
     Write-Host ("[!] Failed: " + $_.Exception.Message)
+    Write-Host ("[!] Temp was: " + $tempRoot)
     pause
     exit 1
 }
